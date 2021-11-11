@@ -12,15 +12,19 @@ from nltk.stem import PorterStemmer
 from numpy import log10
 import numpy as np
 
+
+client = Elasticsearch(hosts="http://elastic:elastic@20.106.130.95:9200")
+main = Blueprint('main', __name__)
+
+
 index = dict()  # inverted_index
 document_vectors = dict()  # document vectors for scoring
 ndocs = 0  # number of documents in the collection
-documents_file_path = "/articles.json"
-index_file_path = "/articles_indexed.pickle"
+documents_file_path = "/home/azureuser/ir/articles.json"
+index_file_path = "/home/azureuser/ir/articles_indexed.pickle"
 stop_words = set(stopwords.words("english"))
 
-# Posting list structure for inverted index
-# Example : {docId : "1", frequency : "5", tf_idf: "2.999"}
+
 class Posting:
     def __init__(self, docId, frequency, tf_idf=0):
         self.docId = docId
@@ -164,31 +168,36 @@ def start_indexing(documents):
     index_file.close()
 
 
+@main.route('/mb/test', methods=['GET'])
+def test():
 
-with open(documents_file_path, "r") as file:
-    documents = json.load(file)
+	if __name__ == "app.views":
 
-ndocs = len(documents)
+		with open(documents_file_path, "r") as file:
+		    documents = json.load(file)
 
-# start_indexing(documents)
+		ndocs = len(documents)
 
-# Load inverted_index
-with open(index_file_path, "rb") as index_file:
-    index = pickle.load(index_file)
+		# start_indexing(documents)
 
-# Query and get scoring
-processed_query = process_query("Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar")
-print("Processed Query ", processed_query)
-query_vector = gen_vectors(processed_query)
-scores = scoring(query_vector)
-print(scores[0:10])
+		# Load inverted_index
+		with open(index_file_path, "rb") as index_file:
+		    index = pickle.load(index_file)
 
+		# Query and get scoring
+		processed_query = process_query("Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar")
+		print("Processed Query ", processed_query)
+		query_vector = gen_vectors(processed_query)
+		scores = scoring(query_vector)
+		print(scores[0:10])
+		return "llo"
 
-#apis 
+	print( __name__ )
+	return "hello"
 
-client = Elasticsearch(hosts="http://elastic:elastic@20.106.130.95:9200")
-main = Blueprint('main', __name__)
-@main.route('/get' , methods=['POST'])
+#apis
+
+@main.route('/mb/get' , methods=['POST'])
 def abc():
     input_data = request.get_json()
     result = client.search(index = "movies", query={"match": { "title" : input_data['query'] }})
