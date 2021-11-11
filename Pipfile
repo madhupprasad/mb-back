@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 flask = "*"
 elasticsearch = "*"
+nltk = "*"
+numpy = "*"
 
 [dev-packages]
 
