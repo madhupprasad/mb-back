@@ -6,7 +6,8 @@ import re
 import nltk
 import pickle
 import datetime
-nltk.download('stopwords')
+
+nltk.download("stopwords")
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from numpy import log10
@@ -14,7 +15,7 @@ import numpy as np
 
 
 client = Elasticsearch(hosts="http://elastic:elastic@20.106.130.95:9200")
-main = Blueprint('main', __name__)
+main = Blueprint("main", __name__)
 
 
 index = dict()  # inverted_index
@@ -33,6 +34,22 @@ class Posting:
 
     def __repr__(self):
         return str(self.__dict__)
+
+
+def load_index():
+    print("Started loading index...")
+    with open(index_file_path, "rb") as index_file:
+        index = pickle.load(index_file)
+    print("Completed...")
+    return index
+
+
+def load_articles():
+    print("Started loading articles...")
+    with open(documents_file_path, "r") as file:
+        articles = json.load(file)
+    print("Completed...")
+    return articles
 
 
 def tokenize(document):
@@ -168,41 +185,56 @@ def start_indexing(documents):
     index_file.close()
 
 
-@main.route('/mb/test', methods=['GET'])
+@main.route("/mb/test", methods=["GET"])
 def test():
 
-	if __name__ == "app.views":
+    if __name__ == "app.views":
 
-		with open(documents_file_path, "r") as file:
-		    documents = json.load(file)
+        # with open(documents_file_path, "r") as file:
+        #     documents = json.load(file)
 
-		ndocs = len(documents)
+        ndocs = len(documents)
 
-		# start_indexing(documents)
+        # start_indexing(documents)
 
-		# Load inverted_index
-		with open(index_file_path, "rb") as index_file:
-		    index = pickle.load(index_file)
+        # Load inverted_index
+        # with open(index_file_path, "rb") as index_file:
+        #     index = pickle.load(index_file)
 
-		# Query and get scoring
-		processed_query = process_query("Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar")
-		print("Processed Query ", processed_query)
-		query_vector = gen_vectors(processed_query)
-		scores = scoring(query_vector)
-		print(scores[0:10])
-		return "llo"
+        # Query and get scoring
+        processed_query = process_query(
+            "Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar"
+        )
+        print("Processed Query ", processed_query)
+        query_vector = gen_vectors(processed_query)
+        scores = scoring(query_vector)
+        print(scores[0:10])
+        return str(scores[0:10])
 
-	print( __name__ )
-	return "hello"
 
-#apis
+# apis
 
-@main.route('/mb/get' , methods=['POST'])
+
+@main.route("/mb/get", methods=["POST"])
 def abc():
     input_data = request.get_json()
-    result = client.search(index = "movies", query={"match": { "title" : input_data['query'] }})
-    all_hits = result['hits']['hits']
+    result = client.search(
+        index="movies", query={"match": {"title": input_data["query"]}}
+    )
+    all_hits = result["hits"]["hits"]
     return_array = []
     for num, doc in enumerate(all_hits):
-        return_array.append(doc['_source'])
-    return jsonify({'data' : return_array})
+        return_array.append(doc["_source"])
+    return jsonify({"data": return_array})
+
+
+documents = load_articles()
+ndocs = len(documents)
+# start_indexing(documents)
+index = load_index()
+# Query and get scoring
+processed_query = process_query("Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar")
+print("Processed Query ", processed_query)
+query_vector = gen_vectors(processed_query)
+scores = scoring(query_vector)
+print(scores[0:10])
