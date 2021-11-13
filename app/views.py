@@ -14,14 +14,13 @@ from numpy import log10
 import numpy as np
 
 
-client = Elasticsearch(hosts="http://elastic:elastic@20.106.130.95:9200")
 main = Blueprint("main", __name__)
 
 
 index = dict()  # inverted_index
 document_vectors = dict()  # document vectors for scoring
 ndocs = 0  # number of documents in the collection
-documents_file_path = "/home/azureuser/ir/articles.json"
+documents_file_path = "/home/azureuser/ir/new_articles.json"
 index_file_path = "/home/azureuser/ir/articles_indexed.pickle"
 stop_words = set(stopwords.words("english"))
 
@@ -147,7 +146,6 @@ def scoring(query_vector):
     print("Score sorting start", datetime.datetime.now())
     sorted_score = sorted(score.items(), key=lambda x: x[1], reverse=True)
     print("Score sorting end", datetime.datetime.now())
-
     return sorted_score
 
 
@@ -185,56 +183,48 @@ def start_indexing(documents):
     index_file.close()
 
 
-@main.route("/mb/test", methods=["GET"])
+documents = load_articles()
+ndocs = len(documents)
+# start_indexing(documents)
+index = load_index()
+
+client = Elasticsearch("http://elastic:elastic@localhost:9200")
+
+
+@main.route("/mb/getArticles", methods=["POST"])
 def test():
 
     if __name__ == "app.views":
-
-        # with open(documents_file_path, "r") as file:
-        #     documents = json.load(file)
-
-        ndocs = len(documents)
-
-        # start_indexing(documents)
-
-        # Load inverted_index
-        # with open(index_file_path, "rb") as index_file:
-        #     index = pickle.load(index_file)
-
+        input_data = request.get_json()
         # Query and get scoring
-        processed_query = process_query(
-            "Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar"
-        )
+        processed_query = process_query(input_data["query"])
         print("Processed Query ", processed_query)
+        document_vectors.clear()
         query_vector = gen_vectors(processed_query)
         scores = scoring(query_vector)
-        print(scores[0:10])
-        return str(scores[0:10])
+        scores = scores[0:10]
+        print(scores)
+
+        res = []
+        for docid, score in scores:
+            res.append({"articles": documents[str(docid)], "score": score})
+
+        return jsonify({"data": res})
 
 
 # apis
 
 
-@main.route("/mb/get", methods=["POST"])
+@main.route("/mb/getMovies", methods=["POST"])
 def abc():
     input_data = request.get_json()
+    filters = input_data["filters"]
+    
     result = client.search(
-        index="movies", query={"match": {"title": input_data["query"]}}
+        index="movies", query={"multi_match": { "query":input_data["query"], "fields": filters }}
     )
     all_hits = result["hits"]["hits"]
     return_array = []
     for num, doc in enumerate(all_hits):
         return_array.append(doc["_source"])
     return jsonify({"data": return_array})
-
-
-documents = load_articles()
-ndocs = len(documents)
-# start_indexing(documents)
-index = load_index()
-# Query and get scoring
-processed_query = process_query("Bigil Vijay Nayanthara Jackie Shroff Atlee Kumar")
-print("Processed Query ", processed_query)
-query_vector = gen_vectors(processed_query)
-scores = scoring(query_vector)
-print(scores[0:10])

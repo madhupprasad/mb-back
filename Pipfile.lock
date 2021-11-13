@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d21fdda2dad9335fb009b4b8bd4b9f87a8071838d419b863497ee000f5d8d9a0"
+            "sha256": "3d619290454a1b736677f4205211798252eb89dfdbb0cbfb673454fbfe79947e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -45,6 +45,14 @@
             ],
             "index": "pypi",
             "version": "==2.0.2"
+        },
+        "flask-cors": {
+            "hashes": [
+                "sha256:74efc975af1194fc7891ff5cd85b0f7478be4f7f59fe158102e91abb72bb4438",
+                "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"
+            ],
+            "index": "pypi",
+            "version": "==3.0.10"
         },
         "itsdangerous": {
             "hashes": [
@@ -238,6 +246,13 @@
                 "sha256:fff55f3ce50a3ff63ec8e2a8d3dd924f1941b250b0aac3d3d42b687eeff07a8e"
             ],
             "version": "==2021.11.10"
+        },
+        "six": {
+            "hashes": [
+                "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
+                "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
+            ],
+            "version": "==1.16.0"
         },
         "tqdm": {
             "hashes": [
